@@ -78,12 +78,16 @@ def report_task(task):
                 s += wu.time_finished()
             except Exception:
                 pass
-        avg_wu_time = s / complete
-        sec = ((total-complete-running)*avg_wu_time)
-        print "ETA %d sec" % sec
+        if complete > 0 and s > 0:
+            avg_wu_time = s / complete
+            seconds = ((total-complete)*avg_wu_time) / running
+            hours=minutes=0
+            minutes = int(seconds/60)
+            hours = int(minutes/60)
+            print "ETA %02d:%02d:%02d" % (hours,minutes%60,seconds%60)
 
     # Who's working?
-    print "\n%d active:" % running
+    print "Workers:",
     hosts = {}
     for wu in task.all_workunits():
         try:
@@ -93,4 +97,5 @@ def report_task(task):
             pass
     print ", ".join([
             "%s x%s" % (hostname,count)
-            for hostname,count in hosts.items()])
+            for hostname,count in hosts.items()]),
+    print " (%d total)" % running
