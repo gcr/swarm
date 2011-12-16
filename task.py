@@ -16,23 +16,21 @@ class Task(object):
     - A task directory
     - N workunit names, spliced to the commandline
     """
-    def __init__(self, task_name, cmdline, workunits, directory=None,line_filter=None, progress_hook=None, wu_failure_hook=None):
-        self.task_name = task_name
+    def __init__(self, name, cmdline, workunits, directory=None,line_filter=None):
+        self.name = name
         self.cmdline = cmdline
         self.workunit_names = workunits # WARNING: ASSUMED TO BE UNIQUE
         if directory==None:
-            directory="tasks/%s/" % task_name
+            directory="tasks/%s/" % name
             if not os.path.isdir(directory):
                 os.makedirs(directory)
         self.directory = directory
         self.line_filter = line_filter
-        self.progress_hook = progress_hook
-        self.wu_failure_hook = wu_failure_hook
 
     def all_workunits(self):
         for wu_name in map(str,self.workunit_names):
             yield Workunit(
-                workunit_name=wu_name,
+                name=wu_name,
                 cmdline = self.cmdline.replace("WORKUNIT", wu_name),
                 task_dir = self.directory,
                 line_filter=self.line_filter
@@ -43,28 +41,42 @@ class Task(object):
             if not wu.is_done() and not wu.is_running():
                 yield wu
 
+    def is_done(self):
+        return all([ wu.is_done()
+                     for wu in self.all_workunits()])
 
-    def execute(self):
+    def progress(self):
+        total = complete = running = todo = 0
+        for wu in self.all_workunits():
+            total += 1
+            if wu.is_done():
+                complete += 1
+            elif wu.is_running():
+                running += 1
+            else:
+                todo += 1
+        return total,complete,running,todo
+
+
+    def execute(self,progress_hook=None,wu_failure_hook=None):
         for wu in self.all_remaining_workunits():
             try:
                 wu.execute()
-                if self.progress_hook:
-                    self.progress_hook(wu, self)
+                if progress_hook:
+                    progress_hook(wu, self)
             except Exception:
                 print "EXCEPTION!"
                 exc_type, exc_value, exc_traceback = sys.exc_info()
                 exc = traceback.format_exception(exc_type, exc_value,
-                                                 exc_traceback,
-                                                 file=sys.stderr)
+                                                 exc_traceback)
                 exc = "".join(exc)+"\nTask: %s\nWorkunit: %s"%(
-                    self.task_name, wu.workunit_name)
+                    self.name, wu.name)
                 sys.stderr.write(exc)
-                if self.wu_failure_hook:
-                    self.wu_failure_hook(wu, exc, self)
+                if wu_failure_hook:
+                    wu_failure_hook(wu, exc, self)
 
 
-#(self, task_name, cmdline, workunits, directory=None,line_filter=None, progress_hook=None, wu_failure_hook=None):
-t = Task("test_task", "sleep 1; echo work WORKUNIT; sleep WORKUNIT;",
-         xrange(25))
-print "Running..."
-t.execute()
+# t = Task("test_task", "sleep 1; echo work WORKUNIT; sleep WORKUNIT;",
+#          xrange(25))
+# print "Running..."
+# t.execute()

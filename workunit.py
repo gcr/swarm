@@ -8,15 +8,15 @@ import subprocess
 import time
 
 class Workunit(object):
-    def __init__(self, workunit_name, cmdline, task_dir, line_filter=None):
-        self.workunit_name = workunit_name
+    def __init__(self, name, cmdline, task_dir, line_filter=None):
+        self.name = name
         self.cmdline = cmdline
         self.task_dir = task_dir
         self.line_filter = line_filter
 
-        self.lockfile = os.path.join(task_dir, workunit_name+".running")
-        self.donefile = os.path.join(task_dir, workunit_name+".done")
-        self.logfile = os.path.join(task_dir, workunit_name+".log")
+        self.lockfile = os.path.join(task_dir, name+".running")
+        self.donefile = os.path.join(task_dir, name+".done")
+        self.logfile = os.path.join(task_dir, name+".log")
 
     def is_running(self):
         return os.path.isfile(self.lockfile)
