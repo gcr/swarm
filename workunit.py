@@ -8,15 +8,15 @@ import subprocess
 import time
 
 class Workunit(object):
-    def __init__(self, checkpoint_name, cmdline, task_dir, line_filter=None):
-        self.checkpoint_name = checkpoint_name
+    def __init__(self, workunit_name, cmdline, task_dir, line_filter=None):
+        self.workunit_name = workunit_name
         self.cmdline = cmdline
         self.task_dir = task_dir
         self.line_filter = line_filter
 
-        self.lockfile = os.path.join(task_dir, checkpoint_name+".running")
-        self.donefile = os.path.join(task_dir, checkpoint_name+".done")
-        self.logfile = os.path.join(task_dir, checkpoint_name+".log")
+        self.lockfile = os.path.join(task_dir, workunit_name+".running")
+        self.donefile = os.path.join(task_dir, workunit_name+".done")
+        self.logfile = os.path.join(task_dir, workunit_name+".log")
 
     def is_running(self):
         return os.path.isfile(self.lockfile)
@@ -64,6 +64,8 @@ class Workunit(object):
 
                 p.wait()
                 if p.returncode != 0:
+                    # Note that the lockfile will still be there. I think
+                    # this is a good thing.
                     raise IOError("Process returned exit code %d; command line was %s" % (
                             p.returncode, self.cmdline))
 
@@ -75,5 +77,5 @@ class Workunit(object):
 
         os.remove(self.lockfile)
 
-w = Workunit("Foo", "sleep 5; echo 'Hi'; sleep 5; echo 'Bye'; sleep 5; exit 0", "/tmp/workunit-test")
-w.execute()
+#w = Workunit("Foo", "sleep 5; echo 'Hi'; sleep 5; echo 'Bye'; sleep 5; exit 0", "/tmp/workunit-test")
+#w.execute()
