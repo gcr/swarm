@@ -137,5 +137,8 @@ def format_time(s):
         tstr = ("%dm "+tstr) % (m % 60)
         if m >= 60:
             h = m/60
-            tstr = ("%dh "+tstr) % h
+            tstr = ("%dh "+tstr) % (h % 24)
+            if h >= 24:
+                d = h/24
+                tstr = ("%dd "+tstr) % d
     return tstr
