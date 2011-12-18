@@ -59,21 +59,29 @@ class Task(object):
 
 
     def execute(self,progress_hook=None,wu_failure_hook=None):
-        for wu in self.all_remaining_workunits():
-            try:
-                wu.execute()
-                if progress_hook:
-                    progress_hook(wu, self)
-            except Exception:
-                print "EXCEPTION!"
-                exc_type, exc_value, exc_traceback = sys.exc_info()
-                exc = traceback.format_exception(exc_type, exc_value,
-                                                 exc_traceback)
-                exc = "".join(exc)+"\nTask: %s\nWorkunit: %s"%(
-                    self.name, wu.name)
-                sys.stderr.write(exc)
-                if wu_failure_hook:
-                    wu_failure_hook(wu, exc, self)
+        """
+        Perform every unfinished workunit in this task.
+        Make multiple passes until there's no more work left.
+        """
+        another_pass = True
+        while another_pass:
+            another_pass = False
+            for wu in self.all_remaining_workunits():
+                try:
+                    wu.execute()
+                    another_pass = True
+                    if progress_hook:
+                        progress_hook(wu, self)
+                except Exception:
+                    print "EXCEPTION!"
+                    exc_type, exc_value, exc_traceback = sys.exc_info()
+                    exc = traceback.format_exception(exc_type, exc_value,
+                                                     exc_traceback)
+                    exc = "".join(exc)+"\nTask: %s\nWorkunit: %s"%(
+                        self.name, wu.name)
+                    sys.stderr.write(exc)
+                    if wu_failure_hook:
+                        wu_failure_hook(wu, exc, self)
 
 
 # t = Task("test_task", "sleep 1; echo work WORKUNIT; sleep WORKUNIT;",
