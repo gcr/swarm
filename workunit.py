@@ -36,7 +36,23 @@ class Workunit(object):
         else:
             return host
 
-    def time_finished(self):
+    def time_started(self):
+        """
+        Returns unix time when the workunit was started
+        """
+        return os.stat(self.lockfile).st_ctime
+
+    def time_last_activity(self):
+        """
+        Returns unix time when the workunit was last touched (line in
+        the logfile)
+        """
+        return os.stat(self.logfile).st_mtime
+
+    def duration(self):
+        """
+        Report how LONG this workunit took to finish
+        """
         assert self.is_done()
         with open(self.donefile) as f:
             return float(f.read().strip())

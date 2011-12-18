@@ -2,6 +2,7 @@
 # -*- coding: utf-8
 import argparse
 import sys
+import time
 from worker import WorkerPool
 
 parser = argparse.ArgumentParser(description="Manage your running tasks.",
@@ -14,6 +15,11 @@ parser.add_argument(
 parser.add_argument(
     '--report', '-r', action='store_true',
     help="Report on the status of the experiment"
+)
+
+parser.add_argument(
+    '--report-active', '-ra', action='store_true', dest="report_active",
+    help="Report on active workunits, showing elapsed times"
 )
 
 parser.add_argument(
@@ -32,14 +38,16 @@ def swarm(tasks,
     if args.tasks:
         tasks = [t for t in tasks if t.name in args.tasks]
 
-    if args.work and not args.report:
+    if args.work and not args.report and not args.report_active:
         w = WorkerPool(tasks, args.concurrency, line_filter=line_filter,
                        progress_hook=progress_hook,
                        wu_failure_hook=wu_failure_hook)
         w.execute()
-    elif args.report and not args.work:
+    elif args.report and not args.work and not args.report_active:
         for task in tasks:
             report_task(task)
+    elif args.report_active and not args.work and not args.report:
+        report_active(tasks)
     else:
         parser.print_help()
 
@@ -75,7 +83,7 @@ def report_task(task):
         s=0
         for wu in task.all_workunits():
             try:
-                s += wu.time_finished()
+                s += wu.duration()
             except Exception:
                 pass
         if complete > 0 and s > 0:
@@ -99,3 +107,25 @@ def report_task(task):
             "%s x%s" % (hostname,count)
             for hostname,count in hosts.items()]),
     print " (%d total)" % running
+
+def report_active(tasks):
+    any_workers = False
+    for task in tasks:
+        for wu in task.all_workunits():
+            try:
+                if wu.is_running():
+                    if not any_workers:
+                        print "Workers:"
+                    print ("\n%s  %s / %s\n"+
+                    "  Started:       %d sec ago\n"+
+                    "  Last activity: %d sec ago") % (
+                        wu.which_host(),
+                        task.name,
+                        wu.name,
+                        time.time()-wu.time_started(),
+                        time.time()-wu.time_last_activity())
+                    any_workers = True
+            except Exception:
+                pass
+    if not any_workers:
+        print "No active workers."
