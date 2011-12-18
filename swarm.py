@@ -89,10 +89,11 @@ def report_task(task):
         if complete > 0 and s > 0:
             avg_wu_time = s / complete
             seconds = ((total-complete)*avg_wu_time) / running
-            hours=minutes=0
-            minutes = int(seconds/60)
-            hours = int(minutes/60)
-            print "ETA %02d:%02d:%02d" % (hours,minutes%60,seconds%60)
+            # hours=minutes=0
+            # minutes = int(seconds/60)
+            # hours = int(minutes/60)
+            # print "ETA %02d:%02d:%02d" % (hours,minutes%60,seconds%60)
+            print "ETA %s" % format_time(seconds)
 
     # Who's working?
     print "Workers:",
@@ -116,16 +117,25 @@ def report_active(tasks):
                 if wu.is_running():
                     if not any_workers:
                         print "Workers:"
-                    print ("\n%s  %s / %s\n"+
-                    "  Started:       %d sec ago\n"+
-                    "  Last activity: %d sec ago") % (
-                        wu.which_host(),
-                        task.name,
-                        wu.name,
-                        time.time()-wu.time_started(),
-                        time.time()-wu.time_last_activity())
+                    print "\n%s  %s / %s" % (
+                        wu.which_host(), task.name, wu.name)
+                    print "  Started:  %s ago" % format_time(
+                        time.time()-wu.time_started())
+                    print "  Activity: %s ago" % format_time(
+                        s = time.time()-wu.time_last_activity())
                     any_workers = True
             except Exception:
                 pass
     if not any_workers:
         print "No active workers."
+
+
+def format_time(s):
+    tstr = "%ds" % (s % 60)
+    if s >= 60:
+        m = s/60
+        tstr = ("%dm "+tstr) % (m % 60)
+        if m >= 60:
+            h = m/60
+            tstr = ("%dh "+tstr) % h
+    return tstr
