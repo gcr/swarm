@@ -12,12 +12,13 @@ Features
 - Distribute long-running jobs across many cores
 
 - One machine not enough? Share the workload across many NFS-mounted
-  (or SSHFS-mounted) machines for massive speed gains!
+  (or SSHFS-mounted) machines for massive speed gains
 
-- If things crash, swarm restarts your task roughly where you left off!
+- If things crash, swarm restarts your task roughly where you left off
+  so you don't have to start the entire job from scratch
 
-- Simple to use -- each task is just a command line! Just clone this
-  repo, write a swarm script, and you're off!
+- Simple to use -- each task is just a command line. Just clone this
+  repo, write a short script, and you're off!
 
 - Lightweight and non-intrusive -- swarm keeps all of your jobs'
   stdout files and its internal lock files in a single 'tasks' folder.
