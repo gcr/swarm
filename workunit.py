@@ -6,6 +6,8 @@ import fcntl
 import socket
 import subprocess
 import time
+import atexit
+import signal
 
 class Workunit(object):
     def __init__(self, name, cmdline, task_dir, line_filter=None):
@@ -45,7 +47,9 @@ class Workunit(object):
         # Acquire lock
         fd = os.open(self.lockfile, os.O_CREAT|os.O_EXCL|os.O_RDWR)
         os.close(fd)
-        # passing O_EXCL works for some NFS clients
+        # passing O_EXCL is only safe for some NFS clients:
+        # NFSv3, kernel 2.6.5 or better.
+        # http://stackoverflow.com/questions/3406712/open-o-creat-o-excl-on-nfs-in-linux
 
         with open(self.lockfile, "w") as f:
             fcntl.flock(f, fcntl.LOCK_SH)
@@ -54,8 +58,23 @@ class Workunit(object):
 
             with open(self.logfile, "w") as log:
                 # Run process
-                p = subprocess.Popen(self.cmdline, shell=True,
-                                     stdout=subprocess.PIPE)
+                def session():
+                    signal.signal(signal.SIGINT,signal.SIG_IGN)
+                p = subprocess.Popen(
+                    self.cmdline, shell=True,
+                    stdout=subprocess.PIPE,
+                    preexec_fn=session)
+                # (Don't forward signals)
+
+                # Kill this process when we die
+                def killer(self,p):
+                    if p.returncode == None:
+                        # NOTE that the forked python dies with the
+                        # child process
+                        os.killpg(os.getpgid(p.pid),signal.SIGTERM)
+                atexit.register(killer,self, p)
+
+                # Process lines
                 for line in iter(p.stdout.readline, ''):
                     if (not self.line_filter
                         or (self.line_filter and self.line_filter(line))):
@@ -63,6 +82,7 @@ class Workunit(object):
                         log.flush()
 
                 p.wait()
+
                 if p.returncode != 0:
                     # Note that the lockfile will still be there. I think
                     # this is a good thing.

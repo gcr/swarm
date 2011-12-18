@@ -4,6 +4,8 @@
 import threading
 import random
 import time
+import signal
+import sys
 
 class WorkerPool(object):
     """
@@ -27,13 +29,21 @@ class WorkerPool(object):
 
     def execute(self):
         threads = [
-                threading.Thread(target=self.worker, args=(x,))
-                for x in xrange(self.concurrency)
-                ]
+            threading.Thread(target=self.worker, args=(x,))
+            for x in xrange(self.concurrency)
+            ]
+        def handler(a,b):
+            print "Ctrl+C caught, dying badly...."
+            print "(You now have stale workunits)"
+            sys.exit(1)
+        signal.signal(signal.SIGINT, handler)
         for t in threads:
+            t.daemon = True # the program exits when there are only daemon threads
             t.start()
-        for t in threads:
-            t.join()
+        while any(t.isAlive() for t in threads):
+            # We have to poll like this to catch Ctrl+C. Ew.
+            for t in threads:
+                t.join(5)
 
     def worker(self,worker_id):
         def progress_hook(wu,task):
