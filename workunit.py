@@ -79,6 +79,7 @@ class Workunit(object):
                 p = subprocess.Popen(
                     self.cmdline, shell=True,
                     stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
                     preexec_fn=session)
                 # (Don't forward signals)
 
