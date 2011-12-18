@@ -44,12 +44,16 @@ command lines:
 - `ffmpeg -i WORKUNIT -vcodec h264 output-WORKUNIT.mp4`
 - `ffmpeg -i WORKUNIT output-WORKUNIT.ogg`
 
+For each command line, `WORKUNIT` becomes the name of each workunit.
+Command lines are arbitrary shell scripts; you can use piping or
+redirection or whatever else.
+
 Writing the swarm script
 ------------------------
 
-This script describes each task and the list of workunits for each
-task. Here's an example that will convert all of the videos in the
-`input` folder to avi, mp4, and ogg:
+This script describes each conversion task and the list of workunits
+for each task. Here's an example that will convert all of the videos
+in the `input` folder to avi, mp4, and ogg:
 
     #!/usr/bin/env python2
     # -*- coding: utf-8
