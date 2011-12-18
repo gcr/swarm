@@ -44,9 +44,9 @@ command lines:
 - `ffmpeg -i WORKUNIT -vcodec h264 output-WORKUNIT.mp4`
 - `ffmpeg -i WORKUNIT output-WORKUNIT.ogg`
 
-For each command line, `WORKUNIT` becomes the name of each workunit.
-Command lines are arbitrary shell scripts; you can use piping or
-redirection or whatever else.
+For each command line, `WORKUNIT` becomes the name of each workunit;
+here, the filename of a video to convert. Command lines are arbitrary
+shell scripts; you can use piping or redirection or whatever else.
 
 Writing the swarm script
 ------------------------
