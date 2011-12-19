@@ -55,12 +55,15 @@ def swarm(tasks,
 
 def report_task(task):
     if task.is_done():
-        print "\nTask %s done" % task.name
+        print "Task %s done" % task.name
         return
     bar_width=50
 
     total,complete,running,todo=task.progress()
-    print "\n-----"
+    if todo == total:
+        print "Task %s not started" % task.name
+        return
+    print "\n"
     n="Task: %s" % task.name
     c="%.2f%%  %d/%d" % (float(complete)*100/total, complete,total)
 
@@ -108,6 +111,7 @@ def report_task(task):
             "%s x%s" % (hostname,count)
             for hostname,count in hosts.items()]),
     print " (%d total)" % running
+    print ""
 
 def report_active(tasks):
     any_workers = False
