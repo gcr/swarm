@@ -99,7 +99,7 @@ def report_task(task):
             print "ETA %s" % format_time(seconds)
 
     # Who's working?
-    print "Workers:",
+    print "Workers: (%d total)" % running
     hosts = {}
     for wu in task.all_workunits():
         try:
@@ -107,10 +107,9 @@ def report_task(task):
             hosts[hostname] = hosts.get(hostname,0)+1
         except Exception:
             pass
-    print ", ".join([
-            "%s x%s" % (hostname,count)
-            for hostname,count in hosts.items()]),
-    print " (%d total)" % running
+    print "\n".join([
+            "   %s (x%s)" % (hostname,count)
+            for hostname,count in sorted(hosts.items())])
     print ""
 
 def report_active(tasks):
