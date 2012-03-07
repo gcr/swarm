@@ -108,7 +108,7 @@ def report_task(task):
         except Exception:
             pass
     print "\n".join([
-            "    %s (x%s)" % (hostname,count)
+            "   %s (x%s)" % (hostname,count)
             for hostname,count in sorted(hosts.items())])
     print ""
 
