@@ -28,13 +28,14 @@ class Workunit(object):
 
     def which_host(self):
         assert self.is_running()
-        with open(self.lockfile) as f:
-            host = f.read().strip()
-        if host == '':
-            time.sleep(0.1)
-            return self.which_host()
-        else:
-            return host
+        host = ''
+        for i in xrange(10):
+            with open(self.lockfile) as f:
+                host = f.read().strip()
+            if host != '':
+                return host
+            time.sleep(0.5)
+        return '???'
 
     def time_started(self):
         """
