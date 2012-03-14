@@ -16,9 +16,9 @@ class Workunit(object):
         self.task_dir = task_dir
         self.line_filter = line_filter
 
-        self.lockfile = os.path.join(task_dir, name+".running")
-        self.donefile = os.path.join(task_dir, name+".done")
-        self.logfile = os.path.join(task_dir, name+".log")
+        self.lockfile = os.path.join(task_dir, name.replace("/","-")+".running")
+        self.donefile = os.path.join(task_dir, name.replace("/","-")+".done")
+        self.logfile = os.path.join(task_dir, name.replace("/","-")+".log")
 
     def is_running(self):
         return os.path.isfile(self.lockfile)
